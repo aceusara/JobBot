@@ -1,10 +1,9 @@
 // public/js/supabase-config.js
-// Replace BOTH values below with your real Supabase project credentials.
-// Get them from: supabase.com → your project → Settings → API
+// Get supabase credentials from: supabase.com → your project → Settings → API
 // These are SAFE to be public (anon/public key only — never the service_role key).
 
-const SUPABASE_URL      = 'YOUR_SUPABASE_URL';       // e.g. https://abcxyz.supabase.co
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';  // starts with eyJ...
+const SUPABASE_URL      = 'https://pafkclelijvmhejyvykz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBhZmtjbGVsaWp2bWhlanl2eWt6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkyMTQ4NzgsImV4cCI6MjA5NDc5MDg3OH0.XZGvxpkPG4REQ0RcMB_viZKdx3TY6fmLIBGbuAuIqg8';
 
 (function () {
   // Guard: don't crash the whole app if credentials haven't been filled in yet.

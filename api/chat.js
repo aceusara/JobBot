@@ -2,9 +2,8 @@
 // API key lives ONLY here in Vercel env vars, never in the browser.
 
 const ALLOWED_ORIGINS = [
-  'https://job-bot-puce.vercel.app',
-  'https://jobbot.vercel.app',
-  // Add your custom domain here when ready e.g. 'https://jobbot.io'
+  'https://job-bot-orcin.vercel.app',
+  'https://jobbot.vercel.app'
 ];
 
 const ALLOWED_MODELS = new Set([
