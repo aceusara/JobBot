@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="JobBot — AI-powered job application assistant. CV match scoring, keyword extraction, CV revamp, cover letters, and interview prep."/>
+  <title>JobBot — Land your next tech job faster</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <link rel="stylesheet" href="./css/style.css"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%23D19223'/><text y='22' x='8' font-size='16' font-family='sans-serif' font-weight='bold' fill='%23013220'>J</text></svg>"/>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     FLOATING TOP NAV
+══════════════════════════════════════════ -->
+<nav class="topnav" id="topnav">
+  <div class="nav-brand" onclick="goLanding()">
+    <div class="nav-mark">J</div>
+    <span class="nav-name">JobBot</span>
+  </div>
+  <div class="nav-right">
+    <button class="btn-theme" id="btn-theme" onclick="toggleTheme()" aria-label="Toggle dark mode">🌙</button>
+    <div id="nav-guest-btns" style="display:flex;gap:8px">
+      <button class="btn-nav-login" onclick="openModal('login')">Log in</button>
+      <button class="btn-nav-signup" onclick="openModal('signup')">Sign up free</button>
+    </div>
+    <div id="nav-user-wrap" class="nav-user-wrap hidden">
+      <span class="nav-user-name" id="nav-user-name"></span>
+      <div class="nav-user-av" id="nav-user-av" onclick="signOut()" title="Sign out">U</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════
+     PAGE: LANDING
+     Scrollable — hero full screen + sections below
+══════════════════════════════════════════ -->
+<div class="page active" id="page-landing">
+
+  <!-- Hero: full viewport -->
+  <div class="hero">
+    <div class="hero-inner">
+      <div class="hero-badge">✦ Free to get started</div>
+      <div class="hero-h1">Land your next tech job</div>
+      <span class="hero-h1-gold">faster and smarter</span>
+      <p class="hero-sub">JobBot analyses your CV against any job description, identifies exactly what's missing, and rewrites everything — so you apply with confidence, not guesswork.</p>
+      <div class="hero-cta-row">
+        <button class="btn-hero-primary" onclick="goTool('match')">Try CV Match Score free →</button>
+        <button class="btn-hero-secondary" onclick="document.getElementById('unlock-section').scrollIntoView({behavior:'smooth'})">See what's included</button>
+      </div>
+      <div class="hero-note">No credit card. No fluff. Your first 3 analyses are on us.</div>
+    </div>
+  </div>
+
+  <!-- CV Match free strip -->
+  <div class="try-strip">
+    <div class="try-left">
+      <svg class="try-illo" width="48" height="48" viewBox="0 0 44 44" fill="none">
+        <rect width="44" height="44" rx="10" fill="#FEF3DC"/>
+        <circle cx="22" cy="22" r="10" stroke="#DCC4A7" stroke-width="2"/>
+        <path d="M22 22 L22 12" stroke="#D19223" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M22 22 L29 25" stroke="#013220" stroke-width="1.8" stroke-linecap="round"/>
+        <circle cx="22" cy="22" r="2" fill="#D19223"/>
+      </svg>
+      <div>
+        <div class="try-label">CV Match Score — free, no account needed</div>
+        <div class="try-sub">Upload your CV + paste a JD → get your match % instantly</div>
+      </div>
+    </div>
+    <button class="btn-try-now" onclick="goTool('match')">Try it now →</button>
+  </div>
+
+  <!-- Unlock section -->
+  <div class="unlock-section" id="unlock-section">
+    <div class="unlock-header">
+      <div class="unlock-title">Unlock the full toolkit when you sign up</div>
+      <div class="unlock-badge">Free forever</div>
+    </div>
+    <div class="unlock-grid">
+
+      <div class="unlock-card" onclick="requireAuth('keywords')">
+        <div class="lock-badge">
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1.5" stroke="#7a5010" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke="#7a5010" stroke-width="1.2"/></svg>
+          Free
+        </div>
+        <div class="unlock-card-illo">
+          <svg width="56" height="56" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#EAF5EE"/><rect x="10" y="14" width="18" height="2.5" rx="1.25" fill="#013220"/><rect x="10" y="20" width="24" height="2.5" rx="1.25" fill="#00563B"/><rect x="10" y="26" width="13" height="2.5" rx="1.25" fill="#ACE1AF"/><circle cx="34" cy="30" r="5" fill="#013220"/><path d="M32 30h4M34 28v4" stroke="#ACE1AF" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <div class="unlock-card-name">Keyword Extractor</div>
+        <div class="unlock-card-desc">Every ATS keyword from any job description, categorised and ready to use</div>
+      </div>
+
+      <div class="unlock-card" onclick="requireAuth('revamp')">
+        <div class="lock-badge">
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1.5" stroke="#7a5010" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke="#7a5010" stroke-width="1.2"/></svg>
+          Free
+        </div>
+        <div class="unlock-card-illo">
+          <svg width="56" height="56" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#EAF5EE"/><rect x="11" y="10" width="16" height="20" rx="2" fill="#DCC4A7"/><rect x="17" y="14" width="16" height="20" rx="2" fill="#013220"/><rect x="19" y="17" width="10" height="1.5" rx="0.75" fill="#ACE1AF"/><rect x="19" y="20" width="12" height="1.5" rx="0.75" fill="#ACE1AF" opacity="0.7"/><path d="M28 8 L32 12 L20 28 L16 28 L16 24 Z" fill="#D19223"/></svg>
+        </div>
+        <div class="unlock-card-name">CV Revamp</div>
+        <div class="unlock-card-desc">AI rewrites your CV bullets, summary and skills tailored to the exact role</div>
+      </div>
+
+      <div class="unlock-card" onclick="requireAuth('cover')">
+        <div class="lock-badge">
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1.5" stroke="#7a5010" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke="#7a5010" stroke-width="1.2"/></svg>
+          Free
+        </div>
+        <div class="unlock-card-illo">
+          <svg width="56" height="56" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#FEF3DC"/><rect x="9" y="13" width="26" height="19" rx="2.5" fill="#FAF7F4" stroke="#DCC4A7" stroke-width="0.8"/><path d="M9 16 L22 23 L35 16" stroke="#D19223" stroke-width="1.2" fill="none"/><circle cx="34" cy="34" r="5" fill="#013220"/><path d="M32 34 L33.5 35.5 L36.5 32.5" stroke="#ACE1AF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="unlock-card-name">Cover Letter</div>
+        <div class="unlock-card-desc">5 questions → a personalised letter that sounds like you, not a template</div>
+      </div>
+
+      <div class="unlock-card" onclick="requireAuth('interview')">
+        <div class="lock-badge">
+          <svg width="8" height="8" viewBox="0 0 12 12" fill="none"><rect x="2" y="5" width="8" height="6" rx="1.5" stroke="#7a5010" stroke-width="1.2"/><path d="M4 5V3.5a2 2 0 014 0V5" stroke="#7a5010" stroke-width="1.2"/></svg>
+          Free
+        </div>
+        <div class="unlock-card-illo">
+          <svg width="56" height="56" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#EAF5EE"/><circle cx="18" cy="16" r="5" fill="#013220"/><path d="M10 32 C10 26 26 26 26 32" fill="#013220"/><rect x="28" y="14" width="8" height="1.5" rx="0.75" fill="#D19223"/><rect x="28" y="17.5" width="10" height="1.5" rx="0.75" fill="#DCC4A7"/><rect x="28" y="21" width="6" height="1.5" rx="0.75" fill="#DCC4A7"/></svg>
+        </div>
+        <div class="unlock-card-name">Interview Prep</div>
+        <div class="unlock-card-desc">Behavioural + technical questions with STAR frameworks, tailored to the role</div>
+      </div>
+
+    </div>
+    <div class="bottom-cta-bar">
+      <div class="bottom-cta-text">Everything above is <strong>completely free</strong> — just create an account. No card required, no trial period.</div>
+      <button class="btn-create-free" onclick="openModal('signup')">Create free account →</button>
+    </div>
+  </div>
+
+</div><!-- /page-landing -->
+
+<!-- ══════════════════════════════════════════
+     PAGE: CV MATCH SCORE (input)
+══════════════════════════════════════════ -->
+<div class="page" id="page-match">
+  <div class="tool-input-page">
+    <div class="tool-input-inner">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <div class="page-title">CV Match Score</div>
+      <div class="page-sub">Upload your CV and paste a job description — get your match % instantly. Free, no account needed.</div>
+
+      <div class="two-col" style="margin-bottom:16px">
+        <div class="tool-form-card" style="margin-bottom:0">
+          <label class="field-lbl">Your CV</label>
+          <div class="upload-zone" id="cv-upload-zone" onclick="document.getElementById('cv-file-inp').click()" role="button" tabindex="0">
+            <div class="upload-icon">📄</div>
+            <div class="upload-label">Click to upload your CV</div>
+            <div class="upload-hint" id="cv-file-hint">PDF, DOCX or TXT · Max 5MB</div>
+            <input type="file" id="cv-file-inp" accept=".pdf,.txt,.docx,.doc" style="display:none" onchange="handleCVUpload(this)"/>
+          </div>
+        </div>
+        <div class="tool-form-card" style="margin-bottom:0">
+          <label class="field-lbl" for="match-jd-input">Job Description</label>
+          <textarea class="ta" id="match-jd-input" rows="9" placeholder="Paste the full job description here — the more complete, the better the analysis…"></textarea>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:28px">
+        <button class="btn-action" id="match-run-btn" onclick="runMatch()">Analyse my match →</button>
+        <span style="font-size:13px;color:#9a9a97" id="match-uses-note">Free · No account needed · Instant result</span>
+      </div>
+
+      <div id="match-loading" class="hidden">
+        <div class="loading-wrap">
+          <div class="lbar"><div class="lfill"></div></div>
+          <div class="ltxt">Comparing your CV against the role…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: CV MATCH RESULT
+══════════════════════════════════════════ -->
+<div class="page" id="page-result">
+  <div class="result-page">
+    <div class="result-inner">
+      <button class="back-btn" onclick="showPage('match')" style="margin-bottom:18px">← Run another analysis</button>
+      <div id="result-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: APP HOME (authenticated hub)
+══════════════════════════════════════════ -->
+<div class="page" id="page-home">
+  <div class="app-home-page">
+    <div class="app-home-inner">
+      <div class="app-welcome-h" id="home-welcome">Welcome back 👋</div>
+      <div class="app-welcome-sub">All 5 tools unlocked. Choose where to start.</div>
+      <div class="tool-hub-grid">
+
+        <div class="tool-hub-card" onclick="goTool('match')">
+          <div class="thc-icon">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#EAF5EE"/><circle cx="22" cy="22" r="10" stroke="#DCC4A7" stroke-width="2"/><path d="M22 22 L22 12" stroke="#D19223" stroke-width="1.8" stroke-linecap="round"/><path d="M22 22 L29 25" stroke="#013220" stroke-width="1.8" stroke-linecap="round"/><circle cx="22" cy="22" r="2" fill="#D19223"/></svg>
+          </div>
+          <div class="thc-name">CV Match Score</div>
+          <div class="thc-desc">See your % match against any JD with gaps and tailoring tips</div>
+          <div class="thc-arrow">→</div>
+        </div>
+
+        <div class="tool-hub-card" onclick="goTool('keywords')">
+          <div class="thc-icon">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#EAF5EE"/><rect x="10" y="14" width="18" height="2.5" rx="1.25" fill="#013220"/><rect x="10" y="20" width="24" height="2.5" rx="1.25" fill="#00563B"/><rect x="10" y="26" width="13" height="2.5" rx="1.25" fill="#ACE1AF"/><circle cx="34" cy="30" r="5" fill="#013220"/><path d="M32 30h4M34 28v4" stroke="#ACE1AF" stroke-width="1.2" stroke-linecap="round"/></svg>
+          </div>
+          <div class="thc-name">Keyword Extractor</div>
+          <div class="thc-desc">Pull every ATS keyword from any job post, categorised</div>
+          <div class="thc-arrow">→</div>
+        </div>
+
+        <div class="tool-hub-card" onclick="goTool('revamp')">
+          <div class="thc-icon">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#EAF5EE"/><rect x="11" y="10" width="16" height="20" rx="2" fill="#DCC4A7"/><rect x="17" y="14" width="16" height="20" rx="2" fill="#013220"/><rect x="19" y="17" width="10" height="1.5" rx="0.75" fill="#ACE1AF"/><rect x="19" y="20" width="12" height="1.5" rx="0.75" fill="#ACE1AF" opacity="0.7"/><path d="M28 8 L32 12 L20 28 L16 28 L16 24 Z" fill="#D19223"/></svg>
+          </div>
+          <div class="thc-name">CV Revamp</div>
+          <div class="thc-desc">Rewrite your bullets and summary for the exact role</div>
+          <div class="thc-arrow">→</div>
+        </div>
+
+        <div class="tool-hub-card" onclick="goTool('cover')">
+          <div class="thc-icon">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#FEF3DC"/><rect x="9" y="13" width="26" height="19" rx="2.5" fill="#FAF7F4" stroke="#DCC4A7" stroke-width="0.8"/><path d="M9 16 L22 23 L35 16" stroke="#D19223" stroke-width="1.2" fill="none"/></svg>
+          </div>
+          <div class="thc-name">Cover Letter</div>
+          <div class="thc-desc">Personalised letter generated in under a minute</div>
+          <div class="thc-arrow">→</div>
+        </div>
+
+        <div class="tool-hub-card" onclick="goTool('interview')">
+          <div class="thc-icon">
+            <svg width="44" height="44" viewBox="0 0 44 44" fill="none"><rect width="44" height="44" rx="10" fill="#EAF5EE"/><circle cx="18" cy="16" r="5" fill="#013220"/><path d="M10 32 C10 26 26 26 26 32" fill="#013220"/><rect x="28" y="14" width="8" height="1.5" rx="0.75" fill="#D19223"/><rect x="28" y="17.5" width="10" height="1.5" rx="0.75" fill="#DCC4A7"/><rect x="28" y="21" width="6" height="1.5" rx="0.75" fill="#DCC4A7"/></svg>
+          </div>
+          <div class="thc-name">Interview Prep</div>
+          <div class="thc-desc">Role-specific behavioural and technical questions</div>
+          <div class="thc-arrow">→</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: KEYWORD EXTRACTOR
+══════════════════════════════════════════ -->
+<div class="page" id="page-keywords">
+  <div class="tool-input-page">
+    <div class="tool-input-inner">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <div class="page-title">Keyword Extractor</div>
+      <div class="page-sub">Paste any job description and get every ATS keyword categorised and ready to use.</div>
+      <div class="tool-form-card">
+        <label class="field-lbl" for="kw-jd-input">Job Description</label>
+        <textarea class="ta" id="kw-jd-input" rows="10" placeholder="Paste the full job description here…"></textarea>
+        <div style="margin-top:16px">
+          <button class="btn-action" id="kw-run-btn" onclick="runKeywords()">Extract keywords →</button>
+        </div>
+      </div>
+      <div id="kw-loading" class="hidden"><div class="loading-wrap"><div class="lbar"><div class="lfill"></div></div><div class="ltxt">Extracting keywords…</div></div></div>
+      <div id="kw-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: CV REVAMP
+══════════════════════════════════════════ -->
+<div class="page" id="page-revamp">
+  <div class="tool-input-page">
+    <div class="tool-input-inner">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <div class="page-title">CV Revamp</div>
+      <div class="page-sub">Add your experience and paste the target role — AI rewrites your bullets and summary to match.</div>
+      <div class="tool-form-card">
+        <label class="field-lbl" for="rv-jd-input">Target Job Description</label>
+        <textarea class="ta" id="rv-jd-input" rows="5" placeholder="Paste the job description you're applying to…"></textarea>
+      </div>
+      <div class="section-divider">Your Work Experience</div>
+      <div id="rv-exp-container"></div>
+      <button class="btn-add" onclick="addExpCard()">＋ Add another role</button>
+      <div class="tool-form-card">
+        <label class="field-lbl" for="rv-summary-input">Personal Summary <span style="font-size:9px;background:#faf7f4;padding:2px 6px;border-radius:4px;color:#9a9a97;font-weight:500;text-transform:lowercase;letter-spacing:0;margin-left:4px;border:1px solid #e8e2d9">optional</span></label>
+        <textarea class="ta" id="rv-summary-input" rows="2" placeholder="A sentence or two about yourself and your strengths…"></textarea>
+      </div>
+      <div style="margin-bottom:24px">
+        <button class="btn-action" id="rv-run-btn" onclick="runRevamp()">Generate tailored CV →</button>
+      </div>
+      <div id="rv-loading" class="hidden"><div class="loading-wrap"><div class="lbar"><div class="lfill"></div></div><div class="ltxt">Rewriting your CV content…</div></div></div>
+      <div id="rv-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: COVER LETTER
+══════════════════════════════════════════ -->
+<div class="page" id="page-cover">
+  <div class="tool-input-page">
+    <div class="tool-input-inner">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <div class="page-title">Cover Letter</div>
+      <div class="page-sub">Answer a few questions about yourself and the role — get a personalised letter that sounds like you, not AI.</div>
+      <div class="tool-form-card">
+        <label class="field-lbl" for="cl-jd-input">Job Description</label>
+        <textarea class="ta" id="cl-jd-input" rows="5" placeholder="Paste the job description here…"></textarea>
+      </div>
+      <div class="section-divider">Help the AI personalise it</div>
+      <div class="tool-form-card">
+        <p style="font-size:13.5px;color:#9a9a97;margin-bottom:16px;line-height:1.55">Answer any or all — the more you fill in, the more personal the letter.</p>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div><label class="field-lbl">Why this specific role? <span style="font-size:9px;background:#faf7f4;padding:2px 5px;border-radius:4px;color:#9a9a97;font-weight:500;text-transform:lowercase;letter-spacing:0;margin-left:4px;border:1px solid #e8e2d9">optional</span></label>
+          <textarea class="ta" id="cl-q1" rows="2" placeholder="What excites you about this position / company?"></textarea></div>
+          <div><label class="field-lbl">Your most relevant achievement <span style="font-size:9px;background:#faf7f4;padding:2px 5px;border-radius:4px;color:#9a9a97;font-weight:500;text-transform:lowercase;letter-spacing:0;margin-left:4px;border:1px solid #e8e2d9">optional</span></label>
+          <textarea class="ta" id="cl-q2" rows="2" placeholder="A specific win with numbers if possible…"></textarea></div>
+          <div><label class="field-lbl">Unique value you bring <span style="font-size:9px;background:#faf7f4;padding:2px 5px;border-radius:4px;color:#9a9a97;font-weight:500;text-transform:lowercase;letter-spacing:0;margin-left:4px;border:1px solid #e8e2d9">optional</span></label>
+          <textarea class="ta" id="cl-q3" rows="2" placeholder="Skills or experiences that set you apart…"></textarea></div>
+          <div><label class="field-lbl">Why this company? <span style="font-size:9px;background:#faf7f4;padding:2px 5px;border-radius:4px;color:#9a9a97;font-weight:500;text-transform:lowercase;letter-spacing:0;margin-left:4px;border:1px solid #e8e2d9">optional</span></label>
+          <textarea class="ta" id="cl-q4" rows="2" placeholder="Something specific about their mission, culture or products…"></textarea></div>
+        </div>
+      </div>
+      <div style="margin-bottom:24px;display:flex;align-items:center;gap:14px">
+        <button class="btn-action" id="cl-run-btn" onclick="runCoverLetter()">Generate cover letter →</button>
+        <span style="font-size:13px;color:#9a9a97">Also uses your uploaded CV if available</span>
+      </div>
+      <div id="cl-loading" class="hidden"><div class="loading-wrap"><div class="lbar"><div class="lfill"></div></div><div class="ltxt">Writing your personalised cover letter…</div></div></div>
+      <div id="cl-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: INTERVIEW PREP
+══════════════════════════════════════════ -->
+<div class="page" id="page-interview">
+  <div class="tool-input-page">
+    <div class="tool-input-inner">
+      <button class="back-btn" onclick="goBack()">← Back</button>
+      <div class="page-title">Interview Prep</div>
+      <div class="page-sub">Get behavioural, technical, and role-specific questions with answer frameworks — calibrated to your seniority level.</div>
+      <div class="tool-form-card">
+        <label class="field-lbl" for="iv-jd-input">Job Description</label>
+        <textarea class="ta" id="iv-jd-input" rows="7" placeholder="Paste the job description you're interviewing for…"></textarea>
+      </div>
+      <div class="tool-form-card">
+        <label class="field-lbl">Seniority Level</label>
+        <p style="font-size:13px;color:#9a9a97;margin-bottom:10px">Questions are calibrated to your level.</p>
+        <div class="seniority-row">
+          <button class="seniority-pill" onclick="setSeniority('junior',this)">Junior / Grad</button>
+          <button class="seniority-pill active" onclick="setSeniority('mid',this)">Mid-level</button>
+          <button class="seniority-pill" onclick="setSeniority('senior',this)">Senior</button>
+          <button class="seniority-pill" onclick="setSeniority('lead',this)">Lead / Manager</button>
+        </div>
+      </div>
+      <div style="margin-bottom:24px;display:flex;align-items:center;gap:14px">
+        <button class="btn-action" id="iv-run-btn" onclick="runInterviewPrep()">Generate questions →</button>
+        <span style="font-size:13px;color:#9a9a97">Also uses your uploaded CV if available</span>
+      </div>
+      <div id="iv-loading" class="hidden"><div class="loading-wrap"><div class="lbar"><div class="lfill"></div></div><div class="ltxt">Generating interview questions…</div></div></div>
+      <div id="iv-result"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     AUTH MODAL
+══════════════════════════════════════════ -->
+<div class="modal-backdrop" id="modal-backdrop" role="dialog" aria-modal="true">
+  <div class="auth-card" id="auth-card">
+    <button class="modal-close-btn" onclick="closeModal()" aria-label="Close">✕</button>
+
+    <div id="modal-form-view">
+      <div class="auth-logo-row">
+        <div class="auth-mark">J</div>
+        <span class="auth-brand-name">JobBot</span>
+      </div>
+      <div class="auth-title" id="modal-title">Create your account</div>
+      <div class="auth-sub" id="modal-sub">Free forever. No credit card needed.</div>
+
+      <div class="modal-err" id="modal-err"></div>
+      <div class="modal-ok" id="modal-ok"></div>
+
+      <div id="modal-google-wrap">
+        <button class="google-btn" onclick="handleGoogleAuth()">
+          <svg width="16" height="16" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>
+        <div class="divider-row"><span id="modal-or-text">or sign up with email</span></div>
+      </div>
+
+      <div id="modal-field-name" class="auth-field">
+        <label for="modal-inp-name">Full name</label>
+        <input class="auth-input-field" id="modal-inp-name" type="text" placeholder="Your full name" autocomplete="name"/>
+      </div>
+      <div class="auth-field">
+        <label for="modal-inp-email">Email address</label>
+        <input class="auth-input-field" id="modal-inp-email" type="email" placeholder="you@email.com" autocomplete="email"/>
+      </div>
+      <div id="modal-field-pwd" class="auth-field">
+        <label for="modal-inp-pwd">Password</label>
+        <div class="pwd-input-wrap">
+          <input class="auth-input-field" id="modal-inp-pwd" type="password" placeholder="Min 8 characters" oninput="updatePwdStrength(this.value)" autocomplete="current-password"/>
+          <button type="button" class="pwd-toggle" onclick="togglePwd('modal-inp-pwd',this)" aria-label="Show password" tabindex="-1">
+            <svg class="eye-icon eye-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+        <div class="pwd-bar" id="pwd-bar-wrap"><div class="pwd-fill" id="pwd-fill-bar"></div></div>
+        <div class="pwd-txt" id="pwd-strength-txt"></div>
+      </div>
+      <div id="modal-field-confirm" class="auth-field hidden">
+        <label for="modal-inp-confirm">Confirm password</label>
+        <div class="pwd-input-wrap">
+          <input class="auth-input-field" id="modal-inp-confirm" type="password" placeholder="Repeat password" autocomplete="new-password"/>
+          <button type="button" class="pwd-toggle" onclick="togglePwd('modal-inp-confirm',this)" aria-label="Show password" tabindex="-1">
+            <svg class="eye-icon eye-show" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            <svg class="eye-icon eye-hide" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+          </button>
+        </div>
+      </div>
+      <div id="modal-forgot-wrap" class="hidden">
+        <span class="forgot-link" onclick="setModalView('forgot')">Forgot password?</span>
+      </div>
+
+      <button class="auth-submit" id="modal-submit-btn" onclick="handleModalSubmit()">Create free account</button>
+
+      <div class="auth-toggle" id="modal-toggle-row">
+        Already have an account? <a onclick="setModalView('login')">Log in</a>
+      </div>
+      <div class="auth-terms" id="modal-terms">
+        By signing up you agree to our <a>Terms</a> and <a>Privacy Policy</a>
+      </div>
+    </div>
+
+    <div id="modal-verify-view" class="hidden">
+      <div class="verify-wrap">
+        <div class="verify-icon">📬</div>
+        <div class="verify-ttl">Check your inbox</div>
+        <div class="verify-msg">
+          We sent a confirmation link to<br>
+          <span class="verify-email-highlight" id="verify-email-display">your email</span>.<br><br>
+          Click it to activate your account, then come back and log in.
+        </div>
+        <div style="margin-top:18px">
+          <span class="auth-toggle" style="display:block">Wrong email? <a onclick="setModalView('signup')">Go back</a></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="modal-reset-sent-view" class="hidden">
+      <div class="verify-wrap">
+        <div class="verify-icon">🔑</div>
+        <div class="verify-ttl">Reset link sent</div>
+        <div class="verify-msg">Check your inbox for a password reset link. It expires in 1 hour.</div>
+        <div style="margin-top:18px">
+          <span class="auth-toggle" style="display:block"><a onclick="setModalView('login')">← Back to log in</a></span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Scripts -->
+<script src="./js/supabase-config.js"></script>
+<script src="./js/auth.js"></script>
+<script src="./js/app.js"></script>
+
+</body>
+</html>
