@@ -1,10 +1,18 @@
 // api/chat.js — Secure OpenRouter proxy
-// API key lives ONLY here in Vercel env vars, never in the browser.
+// API key lives ONLY here in Vercel env vars, never in the browser
 
 const ALLOWED_ORIGINS = [
-  'https://job-bot-orcin.vercel.app',
-  'https://jobbot.vercel.app'
+  'https://job-bot-puce.vercel.app',
+  'https://jobbot.vercel.app',
+  // Change to custom domain here when ready e.g. 'https://jobbot.io'
 ];
+
+function isOriginAllowed(origin, isDev) {
+  if (isDev) return true;
+  if (ALLOWED_ORIGINS.includes(origin)) return true;
+  if (/^https:\/\/job-bot(-[a-z0-9]+)?\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
 
 const ALLOWED_MODELS = new Set([
   'openai/gpt-4o-mini',
@@ -40,7 +48,7 @@ export default async function handler(req, res) {
   // ── CORS ─────────────────────────────────────────────────
   const origin = req.headers['origin'] || '';
   const isDev = process.env.NODE_ENV === 'development' || process.env.VERCEL_ENV === 'development';
-  const originAllowed = isDev || ALLOWED_ORIGINS.includes(origin);
+  const originAllowed = isOriginAllowed(origin, isDev);
 
   if (originAllowed) {
     res.setHeader('Access-Control-Allow-Origin', isDev ? '*' : origin);

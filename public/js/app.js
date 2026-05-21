@@ -1,4 +1,4 @@
-// app.js — JobBot main application logic
+// app.js — JobBot main application logic.
 (function () {
   'use strict';
 
@@ -217,14 +217,32 @@
 
   // ── API call ─────────────────────────────────────────────
   async function callAPI(messages, system) {
-    const res = await fetch(API, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: MODEL, messages, system }),
-    });
-    const d = await res.json();
-    if (!res.ok) throw new Error(d.error || `HTTP ${res.status}`);
-    if (!d.content) throw new Error('Empty response from AI');
+    let res;
+    try {
+      res = await fetch(API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ model: MODEL, messages, system }),
+      });
+    } catch (networkErr) {
+      throw new Error('Could not reach the server. Check your internet connection.');
+    }
+
+    const rawText = await res.text();
+
+    let d;
+    try {
+      d = JSON.parse(rawText);
+    } catch {
+      console.error('[JobBot] Non-JSON response:', res.status, rawText.slice(0, 300));
+      if (res.status === 500) {
+        throw new Error('Server error — make sure OPENROUTER_API_KEY is set in Vercel → Settings → Environment Variables, then redeploy.');
+      }
+      throw new Error(`Server error (${res.status}). Please try again.`);
+    }
+
+    if (!res.ok) throw new Error(d.error || `Server error (${res.status})`);
+    if (!d.content) throw new Error('Empty response from AI. Please try again.');
     return d.content;
   }
 
