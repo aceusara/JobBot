@@ -95,7 +95,7 @@ export default async function handler(req, res) {
     : safeUserMessages;
 
   // ── CALL OPENROUTER ───────────────────────────────────────
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = ENV.OPENROUTER_API_KEY;
   if (!apiKey) {
     console.error('[jobbot] OPENROUTER_API_KEY not set');
     return res.status(500).json({ error: 'Server configuration error' });

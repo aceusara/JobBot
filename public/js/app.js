@@ -96,26 +96,123 @@
     showPage('landing');
   };
 
-  // ── CV upload ────────────────────────────────────────────
-  window.handleCVUpload = function (input) {
+  // ── File text extraction (shared by CV + JD uploads) ─────
+  async function extractTextFromFile(file) {
+    const ext = file.name.split('.').pop().toLowerCase();
+
+    // Plain text — read directly
+    if (ext === 'txt') {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = e => resolve(e.target.result);
+        reader.onerror = () => reject(new Error('Could not read file'));
+        reader.readAsText(file);
+      });
+    }
+
+    // PDF — use pdf.js
+    if (ext === 'pdf') {
+      if (!window.pdfjsLib) throw new Error('PDF library not loaded. Please refresh and try again.');
+      // Point pdf.js worker at CDN
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc =
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await window.pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let text = '';
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(' ') + '\n';
+      }
+      if (!text.trim()) throw new Error('Could not extract text from this PDF. Try copying and pasting the text instead.');
+      return text;
+    }
+
+    // DOCX / DOC — use mammoth.js
+    if (ext === 'docx' || ext === 'doc') {
+      if (!window.mammoth) throw new Error('DOCX library not loaded. Please refresh and try again.');
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await window.mammoth.extractRawText({ arrayBuffer });
+      if (!result.value.trim()) throw new Error('Could not extract text from this document. Try copying and pasting the text instead.');
+      return result.value;
+    }
+
+    throw new Error('Unsupported file type. Please use PDF, DOCX, or TXT.');
+  }
+
+  // ── CV upload ─────────────────────────────────────────────
+  window.handleCVUpload = async function (input) {
     const file = input.files[0];
     if (!file) return;
     if (file.size > 5 * 1024 * 1024) { toast('File too large. Max 5MB.', 'e'); return; }
-    const reader = new FileReader();
-    reader.onload = e => {
-      cvText = e.target.result;
-      const zone = $('cv-upload-zone');
-      if (zone) {
-        zone.classList.add('has');
-        const lbl = zone.querySelector('.upload-label');
-        const hint = $('cv-file-hint');
-        if (lbl) lbl.textContent = 'CV loaded ✓';
-        if (hint) hint.innerHTML = `<span style="color:#D19223;font-weight:600">${esc(file.name)}</span>`;
-      }
+
+    const zone = $('cv-upload-zone');
+    const lbl = zone?.querySelector('.upload-label');
+    const hint = $('cv-file-hint');
+    if (lbl) lbl.textContent = 'Reading file…';
+
+    try {
+      cvText = await extractTextFromFile(file);
+      if (zone) zone.classList.add('has');
+      if (lbl) lbl.textContent = 'CV loaded ✓';
+      if (hint) hint.innerHTML = `<span style="color:#D19223;font-weight:600">${esc(file.name)}</span>`;
       toast('CV uploaded', 's');
-    };
-    reader.onerror = () => toast('Could not read file.', 'e');
-    reader.readAsText(file);
+    } catch (err) {
+      if (lbl) lbl.textContent = 'Click to upload your CV';
+      if (hint) hint.textContent = 'PDF, DOCX or TXT · Max 5MB';
+      if (zone) zone.classList.remove('has');
+      toast(err.message, 'e');
+    }
+    // Reset input so the same file can be re-selected if needed
+    input.value = '';
+  };
+
+  // ── JD upload (populates a textarea by ID) ────────────────
+  window.handleJDUpload = async function (input, targetId) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast('File too large. Max 5MB.', 'e'); return; }
+
+    // Resolve which textarea to populate
+    // On the CV Match page targetId comes from the data attribute;
+    // on other pages it's passed directly as the second argument
+    const taId = targetId || 'match-jd-input';
+    const ta = $(taId);
+    if (!ta) return;
+
+    const origPlaceholder = ta.placeholder;
+    ta.placeholder = 'Reading file…';
+    ta.disabled = true;
+
+    try {
+      const text = await extractTextFromFile(file);
+      ta.value = text;
+      ta.disabled = false;
+      ta.placeholder = origPlaceholder;
+
+      // Show the file badge on the CV Match page (only that page has it)
+      const badge = $('jd-file-badge');
+      const nameEl = $('jd-file-name');
+      if (badge && nameEl) {
+        nameEl.textContent = file.name;
+        badge.style.display = 'flex';
+      }
+
+      toast('Job description loaded', 's');
+    } catch (err) {
+      ta.disabled = false;
+      ta.placeholder = origPlaceholder;
+      toast(err.message, 'e');
+    }
+    input.value = '';
+  };
+
+  // ── Clear JD file badge (CV Match page only) ──────────────
+  window.clearJDFile = function () {
+    const badge = $('jd-file-badge');
+    if (badge) badge.style.display = 'none';
+    const ta = $('match-jd-input');
+    if (ta) ta.value = '';
   };
 
   // ── API call ─────────────────────────────────────────────
